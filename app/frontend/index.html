@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BMI Checker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen font-sans flex flex-col justify-between items-center p-4">
+
+  <main class="w-full max-w-2xl bg-white shadow-xl rounded-2xl border border-gray-100 overflow-hidden my-auto relative">
+    
+    <!-- Error Alert Banner -->
+    <div id="error-banner" class="hidden bg-red-100 border-l-4 border-red-600 text-red-700 p-4 text-sm font-medium transition-all duration-300">
+      <span id="error-message"></span>
+    </div>
+
+    <!-- PAGE 1: Input Form -->
+    <section id="page-1" class="p-8 space-y-6">
+      <div class="text-center space-y-2">
+        <h1 class="text-3xl font-extrabold text-[#c00000] tracking-tight">Smart Health & BMI Checker</h1>
+        <p class="text-gray-500 font-medium">Enter your information below (No account required)</p>
+      </div>
+
+      <form id="bmi-form" class="space-y-6" onsubmit="handleCalculate(event)">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
+          <input type="text" id="fullname" required class="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#c00000] focus:bg-white text-gray-900 transition">
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Weight</label>
+            <div class="flex">
+              <input type="number" step="any" id="weight" required class="w-full px-3 py-3 rounded-l-lg bg-gray-50 border border-r-0 border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#c00000] text-gray-900">
+              <select id="weight_unit" class="bg-gray-100 border border-gray-300 rounded-r-lg px-2 text-sm font-semibold text-gray-700">
+                <option value="kg">kg</option>
+                <option value="lb">lb</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Height</label>
+            <div class="flex">
+              <input type="text" id="height" placeholder="e.g. 175 or 5.11" required class="w-full px-3 py-3 rounded-l-lg bg-gray-50 border border-r-0 border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#c00000] text-gray-900">
+              <select id="height_unit" class="bg-gray-100 border border-gray-300 rounded-r-lg px-2 text-sm font-semibold text-gray-700">
+                <option value="cm">cm</option>
+                <option value="ft/in">ft/in</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Age</label>
+            <input type="number" id="age" min="1" max="120" required class="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#c00000] text-gray-900">
+          </div>
+        </div>
+
+        <div class="flex space-x-4 pt-4">
+          <button type="submit" class="flex-1 bg-[#c00000] hover:bg-red-800 text-white font-bold py-3 rounded-lg shadow transition">Calculate</button>
+          <button type="button" onclick="resetForm()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-lg transition">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- PAGE 2: Health Assessment Questions -->
+    <section id="page-questions" class="hidden p-8 space-y-6">
+      <div class="text-center">
+        <h2 class="text-2xl font-bold text-[#c00000]">Health Habit Check</h2>
+        <p class="text-gray-500 text-sm">Select all habits that apply to you</p>
+      </div>
+
+      <div id="questions-list" class="space-y-3"></div>
+
+      <div class="flex flex-col space-y-3 pt-4">
+        <button onclick="submitAssessment()" class="w-full bg-[#c00000] hover:bg-red-800 text-white font-bold py-3 rounded-lg transition">Finish Assessment</button>
+        <button onclick="switchPage('page-1')" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-lg transition">Back</button>
+      </div>
+    </section>
+
+    <!-- PAGE 3: Results Display -->
+    <section id="page-results" class="hidden p-8 space-y-6 text-center">
+      <h2 class="text-3xl font-bold text-[#c00000]">BMI Results</h2>
+      
+      <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 space-y-4">
+        <div>
+          <span class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Your BMI</span>
+          <div id="res-bmi" class="text-4xl font-extrabold text-gray-900 mt-1">--</div>
+        </div>
+        <div>
+          <span class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Category</span>
+          <div id="res-category" class="text-xl font-bold text-[#c00000] mt-1">--</div>
+        </div>
+        <div>
+          <p id="res-advice" class="text-sm text-gray-700 italic">--</p>
+        </div>
+      </div>
+
+      <div id="health-assessment-container" class="bg-gray-50 p-6 rounded-xl border border-gray-200 space-y-2 hidden">
+        <span class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Health Assessment</span>
+        <div id="res-health" class="text-xl font-bold text-gray-900">--</div>
+        <p id="res-health-advice" class="text-sm text-gray-700 italic">--</p>
+      </div>
+
+      <div class="flex space-x-4 pt-4">
+        <button onclick="goBackFromResults()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-lg transition">Back</button>
+        <button onclick="exportPDF()" class="flex-1 bg-[#c00000] hover:bg-red-800 text-white font-bold py-3 rounded-lg transition">Save as PDF</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="mt-6 text-center text-xs text-gray-500 italic">
+    Developed by BSIT-06 Group 4
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
